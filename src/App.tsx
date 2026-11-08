@@ -771,13 +771,27 @@ export default function App() {
   };
 
   const saveWorkHoursSettings = async () => {
+    // A staff member's hours are either fully configured or left unset.
+    // Do not send half-filled pairs to the API.
+    const incompleteStaff = Object.entries(staffHours).find(([, hours]) =>
+      Boolean(hours.start) !== Boolean(hours.end)
+    );
+    if (incompleteStaff) {
+      setWorkHoursSaveState('error');
+      alert(`员工【${incompleteStaff[0]}】请同时填写上班和下班时间；两项都留空则代表暂不设置。`);
+      return;
+    }
+    const confirmedStaffHours = Object.fromEntries(
+      Object.entries(staffHours).filter(([, hours]) => Boolean(hours.start && hours.end))
+    );
+
     setIsSavingWorkHours(true);
     setWorkHoursSaveState('unsaved');
     try {
       const res = await fetch('/api/presets/shift-settings', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ shiftTimes, staffHours }),
+        body: JSON.stringify({ shiftTimes, staffHours: confirmedStaffHours }),
       });
       const data = await res.json();
       if (!res.ok || !data.success) throw new Error(data.message || '保存失败');
