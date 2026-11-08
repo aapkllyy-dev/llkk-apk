@@ -1,0 +1,206 @@
+{
+  "branches": [
+    {
+      "id": "b-kl",
+      "name": "吉隆坡总店",
+      "code": "KL01",
+      "address": "Bukit Bintang, KL",
+      "phone": "+6011-8888-0001"
+    },
+    {
+      "id": "b-pg",
+      "name": "槟城分店",
+      "code": "PG01",
+      "address": "Georgetown, Penang",
+      "phone": "+6011-8888-0002"
+    },
+    {
+      "id": "b-jb",
+      "name": "新山分店",
+      "code": "JB01",
+      "address": "Mount Austin, JB",
+      "phone": "+6011-8888-0003"
+    },
+    {
+      "id": "b-online",
+      "name": "线上运营客服",
+      "code": "OL01",
+      "address": "Cloud Support",
+      "phone": "+6011-8888-0004"
+    }
+  ],
+  "presets": {
+    "groups": [
+      "VIP 1群 (大客专属)",
+      "Mega888 玩家总群",
+      "918Kiss 专享交流群",
+      "Pussy888 狂欢2群",
+      "老客回馈交流群"
+    ],
+    "platforms": [
+      "Mega888",
+      "918Kiss",
+      "Pussy888",
+      "Joker123",
+      "Evo888",
+      "Live22",
+      "XE88",
+      "Pragmatic Play"
+    ],
+    "banks": [
+      "Maybank (马银行)",
+      "CIMB Bank",
+      "Public Bank (大众)",
+      "Hong Leong (丰隆)",
+      "RHB Bank",
+      "AmBank",
+      "Touch 'n Go eWallet",
+      "DuitNow QR",
+      "Alliance Bank"
+    ],
+    "staffMembers": [
+      "客服小美",
+      "主管阿明",
+      "前台小陈",
+      "夜班阿强"
+    ],
+    "quickAmounts": [
+      50,
+      100,
+      200,
+      300,
+      500,
+      1000,
+      2000,
+      5000
+    ]
+  },
+  "records": [
+    {
+      "id": "rec-20261107-001",
+      "type": "deposit",
+      "groupName": "VIP 1群 (大客专属)",
+      "platform": "Mega888",
+      "gameId": "VIP888_Dragon",
+      "userName": "林老板 (Ah Lim)",
+      "amount": 1200,
+      "bankName": "Maybank (马银行)",
+      "date": "2026-11-07",
+      "time": "14:15",
+      "depositCount": 3,
+      "withdrawCount": 1,
+      "branchName": "吉隆坡总店",
+      "staffName": "值班员工",
+      "notes": "Bank-in 已核对入账",
+      "timestamp": 1794108900000
+    },
+    {
+      "id": "rec-20261107-002",
+      "type": "withdraw",
+      "groupName": "VIP 1群 (大客专属)",
+      "platform": "Mega888",
+      "gameId": "VIP888_Dragon",
+      "userName": "林老板 (Ah Lim)",
+      "amount": 800,
+      "bankName": "Maybank (马银行)",
+      "date": "2026-11-07",
+      "time": "15:40",
+      "depositCount": 3,
+      "withdrawCount": 2,
+      "branchName": "吉隆坡总店",
+      "staffName": "值班员工",
+      "notes": "玩家洗分，款项已转出",
+      "timestamp": 1794114000000
+    },
+    {
+      "id": "rec-20261107-003",
+      "type": "deposit",
+      "groupName": "918Kiss 专享交流群",
+      "platform": "918Kiss",
+      "gameId": "Ace_King99",
+      "userName": "陈志明 (David)",
+      "amount": 500,
+      "bankName": "Public Bank (大众)",
+      "date": "2026-11-07",
+      "time": "13:20",
+      "depositCount": 2,
+      "withdrawCount": 0,
+      "branchName": "槟城分店",
+      "staffName": "值班员工",
+      "notes": "快速进分",
+      "timestamp": 1794105600000
+    },
+    {
+      "id": "rec-20261107-004",
+      "type": "deposit",
+      "groupName": "Mega888 玩家总群",
+      "platform": "Mega888",
+      "gameId": "SpeedStar_X",
+      "userName": "黄少 (Kelvin)",
+      "amount": 300,
+      "bankName": "Touch 'n Go eWallet",
+      "date": "2026-11-07",
+      "time": "11:30",
+      "depositCount": 1,
+      "withdrawCount": 0,
+      "branchName": "线上运营客服",
+      "staffName": "客服",
+      "notes": "TNG扫码转入",
+      "timestamp": 1794099000000
+    },
+    {
+      "id": "rec-20261106-005",
+      "type": "deposit",
+      "groupName": "VIP 1群 (大客专属)",
+      "platform": "Mega888",
+      "gameId": "VIP888_Dragon",
+      "userName": "林老板 (Ah Lim)",
+      "amount": 1000,
+      "bankName": "Maybank (马银行)",
+      "date": "2026-11-06",
+      "time": "18:00",
+      "depositCount": 2,
+      "withdrawCount": 1,
+      "branchName": "吉隆坡总店",
+      "staffName": "值班员工",
+      "notes": "大额充值",
+      "timestamp": 1794036000000
+    },
+    {
+      "id": "rec-20261106-006",
+      "type": "withdraw",
+      "groupName": "VIP 1群 (大客专属)",
+      "platform": "Mega888",
+      "gameId": "VIP888_Dragon",
+      "userName": "林老板 (Ah Lim)",
+      "amount": 500,
+      "bankName": "Maybank (马银行)",
+      "date": "2026-11-06",
+      "time": "21:30",
+      "depositCount": 2,
+      "withdrawCount": 1,
+      "branchName": "吉隆坡总店",
+      "staffName": "值班员工",
+      "notes": "中奖洗分",
+      "timestamp": 1794048600000
+    },
+    {
+      "id": "rec-20261105-007",
+      "type": "deposit",
+      "groupName": "Pussy888 狂欢2群",
+      "platform": "Pussy888",
+      "gameId": "MoonKnight_7",
+      "userName": "刘德胜 (Steve)",
+      "amount": 200,
+      "bankName": "CIMB Bank",
+      "date": "2026-11-05",
+      "time": "16:45",
+      "depositCount": 1,
+      "withdrawCount": 0,
+      "branchName": "新山分店",
+      "staffName": "值班员工",
+      "notes": "新客户首冲",
+      "timestamp": 1793961900000
+    }
+  ]
+}

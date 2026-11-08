@@ -1,0 +1,6 @@
+{
+  "name": "多店共享客资与充值管理系统 (VIP Customer & Top-up App)",
+  "description": "专为游戏与多门市打造的手机端共享管理软件。支持各分店员工登录、实时记录顾客游戏ID、WhatsApp、充值金额、日期时间与活动，自动统计当天与周总数，多店云端实时共享。",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
