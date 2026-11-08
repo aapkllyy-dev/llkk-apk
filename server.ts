@@ -483,7 +483,7 @@ app.put('/api/presets/quick-amounts', (req, res) => {
 app.put('/api/presets/shift-settings', (req, res) => {
   const db = getDatabase();
   if (!db.presets) db.presets = { ...DEFAULT_PRESETS };
-  const isTime = (value: unknown) => typeof value === 'string' && /^([01]\\d|2[0-3]):[0-5]\\d$/.test(value);
+  const isTime = (value: unknown) => typeof value === 'string' && /^([01]\d|2[0-3]):[0-5]\d$/.test(value);
   const { shiftTimes, staffHours } = req.body || {};
 
   if (shiftTimes !== undefined) {
