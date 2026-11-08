@@ -832,6 +832,11 @@ export default function App() {
           localStorage.setItem('last_staff_name', clean);
         }
         setRecords((prev) => prev.map((r) => (r.staffName === oldName ? { ...r, staffName: clean } : r)));
+        setStaffHours((prev) => {
+          const next = { ...prev };
+          if (next[oldName]) { next[clean] = next[oldName]; delete next[oldName]; }
+          return next;
+        });
         setRenamingStaff(null);
         setFeedback({ text: `✅ 员工姓名已改动为【${clean}】，历史账目已同步更新！`, type: 'success' });
         setTimeout(() => setFeedback(null), 3000);
@@ -856,6 +861,7 @@ export default function App() {
       const data = await res.json();
       if (data.success && data.staffMembers) {
         setStaffMembers(data.staffMembers);
+        setStaffHours((prev) => { const next = { ...prev }; delete next[name]; return next; });
         if (staffName === name) {
           const fallback = data.staffMembers[0] || '';
           setStaffName(fallback);
