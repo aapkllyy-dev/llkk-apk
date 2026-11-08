@@ -41,6 +41,8 @@ interface DatabaseSchema {
     quickAmounts?: number[];
     staffMembers?: string[];
     shifts?: string[];
+    shiftTimes?: Record<string, { start: string; end: string }>;
+    staffHours?: Record<string, { start: string; end: string }>;
   };
   systemSettings?: {
     systemName?: string;
@@ -83,6 +85,8 @@ const DEFAULT_PRESETS = {
   quickAmounts: [50, 100, 200, 300, 500, 1000, 2000, 5000],
   staffMembers: ['客服小美', '主管阿明', '前台小陈', '夜班阿强'],
   shifts: ['早班', '晚班'],
+  shiftTimes: { 早班: { start: '08:00', end: '20:00' }, 晚班: { start: '20:00', end: '08:00' } },
+  staffHours: {},
 };
 
 function normalizeRecord(r: any): CustomerRecord {
@@ -143,9 +147,9 @@ function getDatabase(): DatabaseSchema {
       if (!parsed.presets.quickAmounts) {
         parsed.presets.quickAmounts = DEFAULT_PRESETS.quickAmounts;
       }
-      if (!parsed.presets.shifts) {
-        parsed.presets.shifts = DEFAULT_PRESETS.shifts;
-      }
+      if (!parsed.presets.shifts) parsed.presets.shifts = DEFAULT_PRESETS.shifts;
+      if (!parsed.presets.shiftTimes) parsed.presets.shiftTimes = DEFAULT_PRESETS.shiftTimes;
+      if (!parsed.presets.staffHours) parsed.presets.staffHours = {};
     }
     if (Array.isArray(parsed.records)) {
       parsed.records = parsed.records.map(normalizeRecord);
@@ -475,6 +479,48 @@ app.put('/api/presets/quick-amounts', (req, res) => {
   return res.json({ success: true, quickAmounts: db.presets.quickAmounts });
 });
 
+// API: Update shared shift times and individual employee working hours
+app.put('/api/presets/shift-settings', (req, res) => {
+  const db = getDatabase();
+  if (!db.presets) db.presets = { ...DEFAULT_PRESETS };
+  const isTime = (value: unknown) => typeof value === 'string' && /^([01]\\d|2[0-3]):[0-5]\\d$/.test(value);
+  const { shiftTimes, staffHours } = req.body || {};
+
+  if (shiftTimes !== undefined) {
+    if (!shiftTimes || !['早班', '晚班'].every((key) =>
+      isTime(shiftTimes[key]?.start) && isTime(shiftTimes[key]?.end)
+    )) {
+      return res.status(400).json({ success: false, message: '早班和晚班必须填写有效的开始及结束时间（HH:mm）' });
+    }
+    db.presets.shiftTimes = {
+      早班: { start: shiftTimes.早班.start, end: shiftTimes.早班.end },
+      晚班: { start: shiftTimes.晚班.start, end: shiftTimes.晚班.end },
+    };
+  }
+
+  if (staffHours !== undefined) {
+    if (!staffHours || typeof staffHours !== 'object' || Array.isArray(staffHours)) {
+      return res.status(400).json({ success: false, message: '员工工时格式错误' });
+    }
+    const clean: Record<string, { start: string; end: string }> = {};
+    for (const [name, hours] of Object.entries(staffHours)) {
+      const value = hours as any;
+      if (!name.trim() || !isTime(value?.start) || !isTime(value?.end)) {
+        return res.status(400).json({ success: false, message: `员工【${name}】的开始或结束时间无效` });
+      }
+      clean[name] = { start: value.start, end: value.end };
+    }
+    db.presets.staffHours = clean;
+  }
+
+  if (!saveDatabase(db)) return res.status(500).json({ success: false, message: '保存班次设置失败' });
+  return res.json({
+    success: true,
+    shiftTimes: db.presets.shiftTimes || DEFAULT_PRESETS.shiftTimes,
+    staffHours: db.presets.staffHours || {},
+  });
+});
+
 // API: Add Staff Member preset
 app.post('/api/presets/staff', (req, res) => {
   const db = getDatabase();
@@ -495,6 +541,7 @@ app.delete('/api/presets/staff', (req, res) => {
   const name = String(req.body.name || '').trim();
   if (db.presets?.staffMembers) {
     db.presets.staffMembers = db.presets.staffMembers.filter((s) => s !== name);
+    if (db.presets.staffHours) delete db.presets.staffHours[name];
     saveDatabase(db);
   }
   return res.json({ success: true, staffMembers: db.presets?.staffMembers || [] });
@@ -516,6 +563,11 @@ app.put('/api/presets/staff/rename', (req, res) => {
     db.presets.staffMembers[idx] = nName;
   } else if (!db.presets.staffMembers.includes(nName)) {
     db.presets.staffMembers.push(nName);
+  }
+
+  if (db.presets.staffHours?.[oName]) {
+    db.presets.staffHours[nName] = db.presets.staffHours[oName];
+    delete db.presets.staffHours[oName];
   }
 
   let affected = 0;
