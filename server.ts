@@ -541,6 +541,7 @@ app.delete('/api/presets/staff', (req, res) => {
   const name = String(req.body.name || '').trim();
   if (db.presets?.staffMembers) {
     db.presets.staffMembers = db.presets.staffMembers.filter((s) => s !== name);
+    if (db.presets.staffHours) delete db.presets.staffHours[name];
     saveDatabase(db);
   }
   return res.json({ success: true, staffMembers: db.presets?.staffMembers || [] });
@@ -562,6 +563,11 @@ app.put('/api/presets/staff/rename', (req, res) => {
     db.presets.staffMembers[idx] = nName;
   } else if (!db.presets.staffMembers.includes(nName)) {
     db.presets.staffMembers.push(nName);
+  }
+
+  if (db.presets.staffHours?.[oName]) {
+    db.presets.staffHours[nName] = db.presets.staffHours[oName];
+    delete db.presets.staffHours[oName];
   }
 
   let affected = 0;
