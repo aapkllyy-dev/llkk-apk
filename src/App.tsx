@@ -62,6 +62,8 @@ export default function App() {
   const [workHoursSaveState, setWorkHoursSaveState] = useState<'saved' | 'unsaved' | 'error'>('saved');
   // Prevent the 3-second background refresh from overwriting edits before the user confirms them.
   const workHoursDirtyRef = useRef(false);
+  // A native time picker can stay open before onChange fires; pause preset replacement while it has focus.
+  const workHoursEditingRef = useRef(false);
   const [staffName, setStaffName] = useState<string>(() => localStorage.getItem('last_staff_name') || '客服小美');
 
   // Active Main View: 'records' (记账流水) | 'ledger' (看总账 / 核算中心)
@@ -162,7 +164,7 @@ export default function App() {
         if (json.data.presets?.banks?.length > 0) setBanks(json.data.presets.banks);
         if (json.data.presets?.quickAmounts?.length > 0) setQuickAmounts(json.data.presets.quickAmounts);
         if (json.data.presets?.staffMembers?.length > 0) setStaffMembers(json.data.presets.staffMembers);
-        if (!workHoursDirtyRef.current) {
+        if (!workHoursDirtyRef.current && !workHoursEditingRef.current) {
           if (json.data.presets?.shiftTimes) setShiftTimes(json.data.presets.shiftTimes);
           if (json.data.presets?.staffHours) setStaffHours(json.data.presets.staffHours);
         }
@@ -3243,10 +3245,14 @@ export default function App() {
                         <div className="text-xs font-bold text-slate-200">{name}开始 / 结束</div>
                         <label className="block text-[10px] text-slate-400">开始时间</label>
                         <input type="time" value={shiftTimes[name]?.start || '08:00'}
+                          onFocus={() => { workHoursEditingRef.current = true; }}
+                          onBlur={() => { workHoursEditingRef.current = false; }}
                           onChange={(e) => { workHoursDirtyRef.current = true; setWorkHoursSaveState('unsaved'); setShiftTimes((prev) => ({ ...prev, [name]: { ...prev[name], start: e.target.value } })); }}
                           className="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-white" />
                         <label className="block text-[10px] text-slate-400">结束时间</label>
                         <input type="time" value={shiftTimes[name]?.end || '20:00'}
+                          onFocus={() => { workHoursEditingRef.current = true; }}
+                          onBlur={() => { workHoursEditingRef.current = false; }}
                           onChange={(e) => { workHoursDirtyRef.current = true; setWorkHoursSaveState('unsaved'); setShiftTimes((prev) => ({ ...prev, [name]: { ...prev[name], end: e.target.value } })); }}
                           className="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-white" />
                       </div>
@@ -3260,10 +3266,14 @@ export default function App() {
                         <div key={name} className="grid grid-cols-[1fr_1fr_1fr] items-center gap-2">
                           <span className="text-xs text-slate-200 truncate">{name}</span>
                           <input aria-label={name + '上班时间'} type="time" value={hours.start}
-                            onChange={(e) => { workHoursDirtyRef.current = true; setWorkHoursSaveState('unsaved'); setStaffHours((prev) => ({ ...prev, [name]: { ...hours, start: e.target.value } })); }}
+                            onFocus={() => { workHoursEditingRef.current = true; }}
+                          onBlur={() => { workHoursEditingRef.current = false; }}
+                          onChange={(e) => { workHoursDirtyRef.current = true; setWorkHoursSaveState('unsaved'); setStaffHours((prev) => ({ ...prev, [name]: { ...hours, start: e.target.value } })); }}
                             className="min-w-0 w-full bg-slate-900 border border-slate-700 rounded-lg px-1.5 py-1.5 text-xs text-white" />
                           <input aria-label={name + '下班时间'} type="time" value={hours.end}
-                            onChange={(e) => { workHoursDirtyRef.current = true; setWorkHoursSaveState('unsaved'); setStaffHours((prev) => ({ ...prev, [name]: { ...hours, end: e.target.value } })); }}
+                            onFocus={() => { workHoursEditingRef.current = true; }}
+                          onBlur={() => { workHoursEditingRef.current = false; }}
+                          onChange={(e) => { workHoursDirtyRef.current = true; setWorkHoursSaveState('unsaved'); setStaffHours((prev) => ({ ...prev, [name]: { ...hours, end: e.target.value } })); }}
                             className="min-w-0 w-full bg-slate-900 border border-slate-700 rounded-lg px-1.5 py-1.5 text-xs text-white" />
                         </div>
                       );
