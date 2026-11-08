@@ -773,27 +773,15 @@ export default function App() {
   };
 
   const saveWorkHoursSettings = async () => {
-    // A staff member's hours are either fully configured or left unset.
-    // Do not send half-filled pairs to the API.
-    const incompleteStaff = Object.entries(staffHours).find(([, hours]) =>
-      Boolean(hours.start) !== Boolean(hours.end)
-    );
-    if (incompleteStaff) {
-      setWorkHoursSaveState('error');
-      alert(`员工【${incompleteStaff[0]}】请同时填写上班和下班时间；两项都留空则代表暂不设置。`);
-      return;
-    }
-    const confirmedStaffHours = Object.fromEntries(
-      Object.entries(staffHours).filter(([, hours]) => Boolean(hours.start && hours.end))
-    );
-
     setIsSavingWorkHours(true);
     setWorkHoursSaveState('unsaved');
     try {
+      // Only the two shift start times are edited here. Preserve existing employee-hour
+      // data and legacy shift end values without requiring the user to fill them in.
       const res = await fetch('/api/presets/shift-settings', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ shiftTimes, staffHours: confirmedStaffHours }),
+        body: JSON.stringify({ shiftTimes, staffHours }),
       });
       const data = await res.json();
       if (!res.ok || !data.success) throw new Error(data.message || '保存失败');
@@ -1419,7 +1407,7 @@ export default function App() {
                   <div className="flex items-center justify-between pb-1.5 border-b border-amber-500/20">
                     <span className="font-bold text-amber-300 flex items-center gap-1.5 text-xs sm:text-sm">
                       <Sun className="w-4 h-4 text-amber-400" />
-                      <span>☀️ 早班对账核算 ({shiftTimes.早班.start} - {shiftTimes.早班.end})</span>
+                      <span>☀️ 早班对账核算 ({shiftTimes.早班.start})</span>
                     </span>
                     <span className="text-[11px] font-mono text-amber-400 bg-amber-950/80 px-2 py-0.5 rounded border border-amber-500/30">
                       {ledgerStats.shiftBreakdown.早班.depCount + ledgerStats.shiftBreakdown.早班.witCount} 笔流水
@@ -1456,7 +1444,7 @@ export default function App() {
                   <div className="flex items-center justify-between pb-1.5 border-b border-indigo-500/20">
                     <span className="font-bold text-indigo-300 flex items-center gap-1.5 text-xs sm:text-sm">
                       <Moon className="w-4 h-4 text-indigo-400" />
-                      <span>🌙 晚班对账核算 ({shiftTimes.晚班.start} - {shiftTimes.晚班.end})</span>
+                      <span>🌙 晚班对账核算 ({shiftTimes.晚班.start})</span>
                     </span>
                     <span className="text-[11px] font-mono text-indigo-300 bg-indigo-950/80 px-2 py-0.5 rounded border border-indigo-500/30">
                       {ledgerStats.shiftBreakdown.晚班.depCount + ledgerStats.shiftBreakdown.晚班.witCount} 笔流水
@@ -1948,7 +1936,7 @@ export default function App() {
                         }`}
                       >
                         <Sun className={`w-4 h-4 ${shift === '早班' ? 'text-slate-950' : 'text-amber-400'}`} />
-                        <span>☀️ 早班 ({shiftTimes.早班.start} - {shiftTimes.早班.end})</span>
+                        <span>☀️ 早班 ({shiftTimes.早班.start})</span>
                       </button>
                       <button
                         type="button"
@@ -1963,7 +1951,7 @@ export default function App() {
                         }`}
                       >
                         <Moon className={`w-4 h-4 ${shift === '晚班' ? 'text-white' : 'text-indigo-400'}`} />
-                        <span>🌙 晚班 ({shiftTimes.晚班.start} - {shiftTimes.晚班.end})</span>
+                        <span>🌙 晚班 ({shiftTimes.晚班.start})</span>
                       </button>
                     </div>
 
@@ -3233,52 +3221,34 @@ export default function App() {
                   </div>
                 </div>
 
-                {/* Work shift and employee working-hour settings */}
+                {/* Simple work shift time settings */}
                 <div className="space-y-3 bg-slate-850 p-3.5 rounded-xl border border-indigo-500/30">
                   <div>
-                    <div className="font-bold text-white">🕒 班次时间与员工上下班时间</div>
-                    <p className="text-[10px] text-slate-400 mt-1">修改时间后，请按下方「确定并保存」才会正式生效；保存成功后会同步到所有设备。</p>
+                    <div className="font-bold text-white">🕒 早班 / 晚班时间</div>
+                    <p className="text-[10px] text-slate-400 mt-1">每个班次只需设置一个时间，选择后按下方按钮保存。</p>
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     {(['早班', '晚班'] as const).map((name) => (
                       <div key={name} className="space-y-1.5">
-                        <div className="text-xs font-bold text-slate-200">{name}开始 / 结束</div>
-                        <label className="block text-[10px] text-slate-400">开始时间</label>
-                        <input type="time" value={shiftTimes[name]?.start || '08:00'}
+                        <div className="text-xs font-bold text-slate-200">{name}时间</div>
+                        <input
+                          aria-label={name + '时间'}
+                          type="time"
+                          value={shiftTimes[name]?.start || ''}
                           onFocus={() => { workHoursEditingRef.current = true; }}
                           onBlur={() => { workHoursEditingRef.current = false; }}
-                          onChange={(e) => { workHoursDirtyRef.current = true; setWorkHoursSaveState('unsaved'); setShiftTimes((prev) => ({ ...prev, [name]: { ...prev[name], start: e.target.value } })); }}
-                          className="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-white" />
-                        <label className="block text-[10px] text-slate-400">结束时间</label>
-                        <input type="time" value={shiftTimes[name]?.end || '20:00'}
-                          onFocus={() => { workHoursEditingRef.current = true; }}
-                          onBlur={() => { workHoursEditingRef.current = false; }}
-                          onChange={(e) => { workHoursDirtyRef.current = true; setWorkHoursSaveState('unsaved'); setShiftTimes((prev) => ({ ...prev, [name]: { ...prev[name], end: e.target.value } })); }}
-                          className="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-white" />
+                          onChange={(e) => {
+                            workHoursDirtyRef.current = true;
+                            setWorkHoursSaveState('unsaved');
+                            setShiftTimes((prev) => ({
+                              ...prev,
+                              [name]: { ...prev[name], start: e.target.value },
+                            }));
+                          }}
+                          className="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-2 text-white"
+                        />
                       </div>
                     ))}
-                  </div>
-                  <div className="border-t border-slate-700 pt-3 space-y-2">
-                    <div className="text-xs font-bold text-white">每位员工实际上下班时间</div>
-                    {staffMembers.map((name) => {
-                      const hours = staffHours[name] || { start: '', end: '' };
-                      return (
-                        <div key={name} className="grid grid-cols-[1fr_1fr_1fr] items-center gap-2">
-                          <span className="text-xs text-slate-200 truncate">{name}</span>
-                          <input aria-label={name + '上班时间'} type="time" value={hours.start}
-                            onFocus={() => { workHoursEditingRef.current = true; }}
-                          onBlur={() => { workHoursEditingRef.current = false; }}
-                          onChange={(e) => { workHoursDirtyRef.current = true; setWorkHoursSaveState('unsaved'); setStaffHours((prev) => ({ ...prev, [name]: { ...hours, start: e.target.value } })); }}
-                            className="min-w-0 w-full bg-slate-900 border border-slate-700 rounded-lg px-1.5 py-1.5 text-xs text-white" />
-                          <input aria-label={name + '下班时间'} type="time" value={hours.end}
-                            onFocus={() => { workHoursEditingRef.current = true; }}
-                          onBlur={() => { workHoursEditingRef.current = false; }}
-                          onChange={(e) => { workHoursDirtyRef.current = true; setWorkHoursSaveState('unsaved'); setStaffHours((prev) => ({ ...prev, [name]: { ...hours, end: e.target.value } })); }}
-                            className="min-w-0 w-full bg-slate-900 border border-slate-700 rounded-lg px-1.5 py-1.5 text-xs text-white" />
-                        </div>
-                      );
-                    })}
-                    <p className="text-[10px] text-slate-500">员工时间留空表示暂未设置；员工改名后工时设置会自动沿用旧姓名。</p>
                   </div>
                   <div className="flex items-center justify-between gap-2 text-[11px]" role="status" aria-live="polite">
                     <span className={workHoursSaveState === 'saved' ? 'text-emerald-400' : workHoursSaveState === 'error' ? 'text-rose-400' : 'text-amber-300'}>
@@ -3288,7 +3258,7 @@ export default function App() {
                   </div>
                   <button type="button" onClick={saveWorkHoursSettings} disabled={isSavingWorkHours}
                     className="w-full rounded-xl bg-indigo-500 hover:bg-indigo-400 disabled:opacity-50 px-3 py-3 text-sm font-bold text-white">
-                    {isSavingWorkHours ? '正在保存，请稍候...' : '✓ 确定并保存班次 / 员工时间'}
+                    {isSavingWorkHours ? '正在保存，请稍候...' : '✓ 确定并保存早班 / 晚班时间'}
                   </button>
                 </div>
 
